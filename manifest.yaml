@@ -7,7 +7,7 @@ resources:
     deploy_method: stack_set
     deployment_targets:
       organizational_units:
-        - Root                  
+        - o-gn21t8a5iq                  
     regions:
       - us-west-2
     export_outputs: false
