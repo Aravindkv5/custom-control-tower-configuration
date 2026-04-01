@@ -11,3 +11,13 @@ resources:
     regions:
       - us-west-2
     export_outputs: false
+
+  - name: QualysConnectorRole
+    resource_file: templates/qualys-connector-role.yaml
+    deploy_method: stack_set
+    deployment_targets:
+      organizational_units:
+        - Root
+    regions:
+      - us-west-2
+    export_outputs: false
