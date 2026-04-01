@@ -1,0 +1,70 @@
+  PolycloudAutomationPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: polycloud-automation
+      Description: Policy for Polycloud automation role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ReadOnlyDescribeNeededForConsole
+            Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeTags
+              - ec2:DescribeInstanceStatus
+              - ec2:DescribeImages
+              - ec2:DescribeSnapshots
+            Resource: "*"
+
+          - Sid: AllowControlOnAllInstancesInRegion
+            Effect: Allow
+            Action:
+              - ec2:StartInstances
+              - ec2:StopInstances
+              - ec2:RebootInstances
+              - ec2:ModifyInstanceAttribute
+              - ec2:CreateTags
+            Resource: arn:aws:ec2:us-west-2:*:instance/*
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: us-west-2
+
+          - Sid: AllowAMIAndSnapshotCreationInRegion
+            Effect: Allow
+            Action:
+              - ec2:CreateImage
+              - ec2:CreateSnapshot
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: us-west-2
+
+          - Sid: AllowTaggingAMIsAndSnapshotsInRegion
+            Effect: Allow
+            Action:
+              - ec2:CreateTags
+              - ec2:DeleteTags
+            Resource:
+              - arn:aws:ec2:us-west-2:*:image/*
+              - arn:aws:ec2:us-west-2:*:snapshot/*
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: us-west-2
+
+  PolycloudAutomationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: Polycloud-automation-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowFromDesignatedAccountButRestrictToSNUser
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::595851860297:root
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:PrincipalArn: arn:aws:iam::595851860297:user/polycloud-automation
+      ManagedPolicyArns:
+        - !Ref PolycloudAutomationPolicy
