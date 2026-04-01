@@ -1,0 +1,193 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create Commvault IAM User with required policies
+
+Resources:
+
+  CommvaultServiceUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: commvault-service
+
+  CommvaultS3Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: commvault-s3
+      Description: S3 access policy for Commvault
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Stmt1490385696805
+            Effect: Allow
+            Action:
+              - s3:CreateBucket
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:PutObject
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:ListBucket
+              - s3:ListAllMyBuckets
+              - s3:DeleteObject
+            Resource: "*"
+
+  CommvaultBackupRestorePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: commvault-backup-restore
+      Description: Backup and restore policy for Commvault
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: VisualEditor0
+            Effect: Allow
+            Action:
+              - ssm:CancelCommand
+              - ssm:SendCommand
+              - ec2:AuthorizeSecurityGroupIngress
+              - ec2:DescribeInstances
+              - ec2:ModifyVolumeAttribute
+              - ssm:ListCommands
+              - ec2:GetEbsEncryptionByDefault
+              - ec2:CreateKeyPair
+              - ec2:RegisterImage
+              - ec2:DescribeSnapshots
+              - kms:ReEncrypt*
+              - ec2:DescribeExportImageTasks
+              - ec2:DescribeVpnGateways
+              - ec2:ModifySnapshotAttribute
+              - ec2:StartInstances
+              - kms:Encrypt
+              - ec2:RevokeSecurityGroupEgress
+              - ec2:DescribeVolumes
+              - kms:ReEncryptTo
+              - ec2:GetEbsDefaultKmsKeyId
+              - ec2:DescribeExportTasks
+              - s3:PutObjectTagging
+              - ec2:DescribeManagedPrefixLists
+              - ssm:ListDocuments
+              - s3:DeleteObject
+              - ec2:DescribeKeyPairs
+              - ebs:PutSnapshotBlock
+              - ebs:GetSnapshotBlock
+              - iam:GetRole
+              - ec2:CancelExportTask
+              - ec2:CreateTags
+              - ec2:ModifyNetworkInterfaceAttribute
+              - ec2:RunInstances
+              - ec2:StopInstances
+              - ec2:DescribeVolumeAttribute
+              - ec2:CreateVolume
+              - ec2:DescribeImportSnapshotTasks
+              - ec2:CreateNetworkInterface
+              - s3:PutObject
+              - ec2:DescribeTransitGatewayAttachments
+              - ec2:DisassociateIamInstanceProfile
+              - ec2:DescribeSubnets
+              - ec2:ExportImage
+              - ec2:AttachVolume
+              - ec2:ImportVolume
+              - ssm:DescribeDocument
+              - ec2:DescribeRegions
+              - ec2:DescribeFlowLogs
+              - ec2:DescribeTransitGateways
+              - kms:ListResourceTags
+              - s3:ListBucket
+              - ec2:ModifyImageAttribute
+              - ec2:DescribeVpcAttribute
+              - ec2:ModifySubnetAttribute
+              - iam:PassRole
+              - ec2:DescribeInstanceTypeOfferings
+              - ec2:DescribeAvailabilityZones
+              - ec2:DescribeNetworkInterfaceAttribute
+              - ec2:CreateSnapshot
+              - kms:CreateKey
+              - kms:CreateGrant
+              - ec2:DescribeInstanceStatus
+              - ec2:CreateInstanceExportTask
+              - ec2:AssociateDhcpOptions
+              - ec2:ImportInstance
+              - ec2:CancelConversionTask
+              - ec2:ImportSnapshot
+              - iam:ListRoles
+              - ec2:DescribeSecurityGroups
+              - s3:ListAllMyBuckets
+              - ssm:DescribeInstanceInformation
+              - ec2:DescribeVpcs
+              - kms:ListAliases
+              - kms:CreateAlias
+              - ec2:CancelImportTask
+              - iam:GetUser
+              - ec2:CopySnapshot
+              - kms:Decrypt
+              - ec2:DescribeVolumesModifications
+              - ec2:CreateImage
+              - kms:DescribeKey*
+              - ec2:AssociateVpcCidrBlock
+              - kms:GenerateDataKey*
+              - ec2:DescribeInternetGateways
+              - ec2:DeleteVolume
+              - iam:SimulatePrincipalPolicy
+              - s3:PutBucketAcl
+              - ec2:DescribeAccountAttributes
+              - iam:GetAccountAuthorizationDetails
+              - ec2:ImportImage
+              - ec2:DescribeNetworkAcls
+              - ec2:DescribeRouteTables
+              - ec2:DescribeEgressOnlyInternetGateways
+              - ec2:DetachVolume
+              - ec2:ModifyVolume
+              - ec2:GetManagedPrefixListEntries
+              - ec2:DescribeVpnConnections
+              - ec2:DescribeVpcPeeringConnections
+              - ec2:DeleteNetworkInterface
+              - ec2:DescribePrefixLists
+              - kms:ReEncryptFrom
+              - s3:GetObject
+              - ebs:CompleteSnapshot
+              - ec2:DescribeSecurityGroupRules
+              - ec2:DescribeInstanceTypes
+              - ec2:DescribeVpcEndpoints
+              - ec2:DeregisterImage
+              - ec2:DeleteSnapshot
+              - ec2:DeleteTags
+              - ec2:DescribeInstanceAttribute
+              - kms:GenerateDataKeyWithoutPlaintext
+              - ec2:DescribeDhcpOptions
+              - ec2:GetSubnetCidrReservations
+              - ebs:ListChangedBlocks
+              - ec2:GetConsoleOutput
+              - kms:TagResource
+              - ec2:DescribeNetworkInterfaces
+              - ec2:CreateSecurityGroup
+              - ec2:ModifyVpcAttribute
+              - ec2:ModifyInstanceAttribute
+              - s3:PutObjectAcl
+              - ec2:DescribeCarrierGateways
+              - ec2:AuthorizeSecurityGroupEgress
+              - ec2:TerminateInstances
+              - ec2:DetachNetworkInterface
+              - ec2:DescribeIamInstanceProfileAssociations
+              - ec2:DescribeTags
+              - ebs:ListSnapshotBlocks
+              - ec2:DescribeImportImageTasks
+              - ec2:DescribeNatGateways
+              - iam:ListInstanceProfiles
+              - s3:GetBucketAcl
+              - ec2:DescribeCustomerGateways
+              - kms:ListGrants
+              - ec2:DescribeImages
+              - kms:ListKeys
+              - ec2:AttachNetworkInterface
+              - ebs:StartSnapshot
+              - s3:GetBucketLocation
+              - ec2:DescribeConversionTasks
+              - ec2:AssociateIamInstanceProfile
+            Resource: "*"
+
+  AttachPoliciesToUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref CommvaultServiceUser
+      ManagedPolicyArns:
+        - !Ref CommvaultS3Policy
+        - !Ref CommvaultBackupRestorePolicy
