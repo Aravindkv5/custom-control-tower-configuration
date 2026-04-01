@@ -1,3 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Polycloud Automation Role with policy
+
+Resources:
+
   PolycloudAutomationPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
