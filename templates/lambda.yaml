@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Lambda to copy EC2 tags to AMIs, Snapshots, and Volumes with scheduled trigger
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: LAM-NADTC04-EC2-COPY-TAGS-ROLE
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: LambdaEC2TaggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeSnapshots
+                  - ec2:CreateTags
+                  - ec2:DescribeVolumes
+                Resource: "*"
+
+  CopyTagsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LAM-NADTC04-EC2-COPY-TAGS
+      Description: Copies tags from EC2 to respective AMIs, Snapshots, and EBS Volumes.
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Timeout: 300
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          from __future__ import print_function
+          import json
+          import boto3
+          import logging
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.ERROR)
+
+          ec2 = boto3.resource('ec2')
+          ec2_client = boto3.client('ec2')
+
+          debugMode = False
+
+          def lambda_handler(event, context):
+              base = ec2.instances.all()
+
+              for instance in base:
+                  for vol in instance.volumes.all():
+                      if debugMode is True:
+                          print("[DEBUG] " + str(vol))
+                          tag_cleanup(instance)
+                      else:
+                          tags = tag_cleanup(instance)
+                          if len(tags) > 0:
+                              vol.create_tags(Tags=tags)
+
+                      snapshots = ec2_client.describe_snapshots(
+                          Filters=[{'Name': 'volume-id', 'Values': [vol.id]}]
+                      )
+
+                      for snapshot in snapshots['Snapshots']:
+                          snap = ec2.Snapshot(snapshot['SnapshotId'])
+                          if debugMode is True:
+                              print("[DEBUG] " + str(snapshot['SnapshotId']))
+                              tag_cleanup(instance)
+                          else:
+                              tags = tag_cleanup(instance)
+                              if len(tags) > 0:
+                                  snap.create_tags(Tags=tags)
+
+                  for eni in instance.network_interfaces:
+                      if debugMode is True:
+                          print("[DEBUG] " + str(eni))
+                          tag_cleanup(instance)
+                      else:
+                          tags = tag_cleanup(instance)
+                          if len(tags) > 0:
+                              eni.create_tags(Tags=tags)
+
+          def tag_cleanup(instance):
+              tempTags = []
+
+              if not instance.tags:
+                  return tempTags
+
+              for t in instance.tags:
+                  if t['Key'] in [
+                      'Environment','Application','Project Number','Business Group',
+                      'Monitoring','Billing Contact','PM Contact','Technical Contact',
+                      'Data Class','Last Rightsized','Internet Accessible',
+                      'Patch Group','Compliance'
+                  ]:
+                      tempTags.append(t)
+
+              return tempTags
+
+  LambdaScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: LAM-NADTC04-EC2-COPY-TAGS-SCHEDULE
+      Description: Trigger Lambda daily at 12 PM IST
+      ScheduleExpression: cron(30 6 * * ? *)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt CopyTagsLambda.Arn
+          Id: TargetLambda
+
+  LambdaPermissionForEvents:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CopyTagsLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt LambdaScheduleRule.Arn
