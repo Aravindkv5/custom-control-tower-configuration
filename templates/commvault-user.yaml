@@ -3,11 +3,6 @@ Description: Create Commvault IAM User with required policies
 
 Resources:
 
-  CommvaultServiceUser:
-    Type: AWS::IAM::User
-    Properties:
-      UserName: commvault-service
-
   CommvaultS3Policy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -184,10 +179,10 @@ Resources:
               - ec2:AssociateIamInstanceProfile
             Resource: "*"
 
-  AttachPoliciesToUser:
+  CommvaultServiceUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: !Ref CommvaultServiceUser
+      UserName: commvault-service
       ManagedPolicyArns:
         - !Ref CommvaultS3Policy
         - !Ref CommvaultBackupRestorePolicy
